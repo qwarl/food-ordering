@@ -2,7 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-div.hero {
-  @apply block md:grid;
-  grid-template-columns: 0.4fr 0.6fr;
+/* div.hero { */
+/*   @apply block md:grid; */
+/*   grid-template-columns: 0.4fr 0.6fr; */
+/* } */
+
+input[type="email"],
+input[type="password"] {
+  @apply w-full rounded-xl mb-2;
+  @apply block border p-2 border-gray-300 bg-gray-100;
+}
+
+section form button {
+  @apply gap-4 w-full border border-gray-300 rounded-xl px-6 py-2;
+}
+
+button[type="submit"],
+button.submit {
+  @apply w-full text-white font-semibold;
+  @apply border rounded-xl px-6 py-2 bg-primary;
+}
+
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
