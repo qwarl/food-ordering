@@ -6,6 +6,22 @@ const nextConfig = {
         hostname: "raw.githubusercontent.com",
         protocol: "https",
       },
+      {
+        hostname: "*.googleusercontent.com",
+        protocol: "https",
+      },
+      {
+        hostname: "food-ordering-111.s3.amazonaws.com",
+        protocol: "https",
+      },
+      {
+        hostname: "localhost",
+        protocol: "http",
+      },
+      {
+        hostname: "food-ordering-111.s3.ap-southeast-1.amazonaws.com",
+        protocol: "https",
+      },
     ],
   },
 };

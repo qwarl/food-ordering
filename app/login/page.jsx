@@ -10,7 +10,11 @@ export default function Login() {
 
   const handleFormLogin = async (e) => {
     e.preventDefault();
-    await signIn("credentials", { email: dto.email, password: dto.password, callbackUrl: '/' });
+    await signIn("credentials", {
+      email: dto.email,
+      password: dto.password,
+      callbackUrl: "/",
+    });
   };
 
   const checkValid = () => {
@@ -59,7 +63,10 @@ export default function Login() {
           Login
         </button>
         <div className="my-4 text-center text-gray-500">Or login with</div>
-        <button className="flex-row flex justify-center">
+        <button
+          className="flex-row flex justify-center"
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+        >
           <Image
             width="24"
             height="24"
@@ -72,3 +79,5 @@ export default function Login() {
     </section>
   );
 }
+
+

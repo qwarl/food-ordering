@@ -5,15 +5,13 @@ import Link from "next/link";
 
 export default function Header() {
   const session = useSession();
+  const userData = session.data?.user;
+  let userName = userData?.name || userData?.email;
+  if (userName && userName.includes(" ")) {
+    userName = userName.split(" ")[0] + " " + userName.split(" ")[1];
+  }
   // const { data: session, status } = useSession();
-  console.log("ss", session);
-  // if (session.status === "loading") {
-  //   return (
-  //     <div className="flex justify-center items-center">
-  //       <div className="loader"></div>;
-  //     </div>
-  //   );
-  // }
+  // console.log("ss", session);
 
   return (
     <header className="flex justify-between">
@@ -35,6 +33,7 @@ export default function Header() {
         </Link>
       </nav>
 
+      {/* use this if the css is break */}
       {/* {session.status === "unauthenticated" ? (
         <nav className="flex gap-4 items-center">
           <Link href="/login" className="font-bold text-base text-[#6B7280]">
@@ -74,13 +73,18 @@ export default function Header() {
             </Link>
           </>
         ) : (
-          <button
-            href="/login"
-            className="font-bold text-base text-[#6B7280]"
-            onClick={() => signOut()}
-          >
-            Logout
-          </button>
+          <>
+            <Link href="profile" className="whitespace-nowrap">
+              Hello, {userName}
+            </Link>
+            <button
+              href="/login"
+              className="font-bold text-base text-[#6B7280]"
+              onClick={() => signOut()}
+            >
+              Logout
+            </button>
+          </>
         )}
         <Link href="">Cart</Link>
       </nav>

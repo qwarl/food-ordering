@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import axios from "axios";
+import { signIn } from "next-auth/react";
 
 export default function Register() {
   const [dto, setDto] = useState({ email: "", password: "" });
@@ -72,7 +73,10 @@ export default function Register() {
           Register
         </button>
         <div className="my-4 text-center text-gray-500">Or login with</div>
-        <button className="flex-row flex justify-center">
+        <button
+          className="flex-row flex justify-center"
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+        >
           <Image
             width="24"
             height="24"

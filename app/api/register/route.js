@@ -13,6 +13,5 @@ export async function POST(req, res) {
   }
 
   const createdUser = await User.create(body);
-  // return Response.json(createdUser);
   return NextResponse.json(createdUser);
 }
