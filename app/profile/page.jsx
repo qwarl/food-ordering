@@ -12,6 +12,7 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [image, setImage] = useState("");
   const [isSaving, setIsSaving] = useState(null);
+  const [file, setFile] = useState(null);
 
   const { status } = session;
   //   // console.log(session);
@@ -33,22 +34,67 @@ export default function Profile() {
       .finally(() => setSaved(true));
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files;
-    console.log("1", file);
-    if (file?.length > 0) {
-      const data = new FormData();
-      data.set("file", file[0]);
-      axios
-        .post("api/upload", data)
-        .then((res) => {
-          setImage(res.data), console.log("res", res.data);
-        })
-        .catch((err) => console.log("err", err));
-      console.log("ok");
+  // const handleFileChange = async (e) => {
+  //   const file = e.target.files;
+  //   console.log("1", file);
+  //   if (file?.length > 0) {
+  //     const data = new FormData();
+  //     data.set("file", file[0]);
+  //     await axios.post("api/upload", data).then((res) => {
+  //       // setImage(res.data),
+  //       console.log("res", res);
+  //     });
+  //     // .catch((err) => console.log("err", err));
+  //     console.log("ok");
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // const file = e.target.files;
+    if (!file) {
+      alert("Please select a file to upload.");
+      return;
+    }
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_BASE_URL + "/api/upload",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      }
+    );
+    if (response.ok) {
+      const { url, fields } = await response.json();
+
+      const formData = new FormData();
+      Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      formData.append("file", file);
+      console.log("form", `${url}${fields.key}`);
+      const link= url+fields.key
+      setImage(link)
+      console.log("link", link);
+
+      const uploadResponse = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (uploadResponse.ok) {
+        alert("Upload successful!");
+        console.log("up", uploadResponse);
+      } else {
+        console.error("S3 Upload Error:", uploadResponse);
+        alert("Upload failed.");
+      }
+    } else {
+      alert("Failed to get pre-signed URL.");
     }
   };
-  console.log("img", image);
 
   if (status === "loading") {
     return "Loading...";
@@ -74,27 +120,38 @@ export default function Profile() {
         <div className="flex gap-4 items-center">
           <div>
             <div className="p-2 rounded-lg relative">
-              {image && (
-                <Image
-                  // src={image}
-                  // src={`http://localhost:3000/_next/image?url=https%3A%2F%2Ffood-ordering-111.s3.amazonaws.com%2F6y8ls1uplhf.jpg&w=640&q=75`}
-                  src={`${image}`}
-                  className="rounded-lg w-full h-full mb-1"
-                  width={250}
-                  height={250}
-                  alt=""
-                />
-              )}
-              <label>
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <span className="cursor-pointer block border border-gray-300 rounded-lg p-2 text-center">
-                  Edit
-                </span>
-              </label>
+              <form onSubmit={handleSubmit}>
+                {image && (
+                  <Image
+                    src={image}
+                    // src={`http://localhost:3000/_next/image?url=https%3A%2F%2Ffood-ordering-111.s3.amazonaws.com%2F6y8ls1uplhf.jpg&w=640&q=75`}
+                    // src={`${image}`}
+                    className="rounded-lg w-full h-full mb-1"
+                    width={250}
+                    height={250}
+                    alt=""
+                  />
+                )}
+                <label>
+                  <input
+                    type="file"
+                    // className="hidden"
+                    onChange={(e) => {
+                      const files = e.target.files;
+                      if (files) {
+                        setFile(files[0]);
+                      }
+                    }}
+                    accept="image/png, image/jpeg, image/jpg"
+                  />
+                  <button
+                    type="submit"
+                    className="cursor-pointer block border border-gray-300 rounded-lg p-2 text-center"
+                  >
+                    Edit
+                  </button>
+                </label>
+              </form>
             </div>
           </div>
           <form onSubmit={handleProfileUpdate} className="grow">
