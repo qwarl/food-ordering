@@ -4,95 +4,98 @@ import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function Profile() {
   const session = useSession();
   const [userName, setUserName] = useState("");
-  const [saved, setSaved] = useState(false);
   const [image, setImage] = useState("");
-  const [isSaving, setIsSaving] = useState(null);
-  const [file, setFile] = useState(null);
+  const [phone, setPhone] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("");
 
   const { status } = session;
-  //   // console.log(session);
+  console.log("log profile", session);
 
   useEffect(() => {
     if (status === "authenticated") {
       setUserName(session.data.user.name);
       setImage(session.data.user.image);
+
+      fetch("/api/profile", {
+        method: "GET",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("GET profile error");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setPhone(data.phone)
+          setCity(data.city)
+          setCountry(data.country)
+          setPostalCode(data.postalCode)
+          setStreetAddress(data.streetAddress)
+        })
+        .catch((error) => {
+          console.log("GET profile error", error);
+        });
     }
   }, [status, session]);
 
-  const handleProfileUpdate = async (e) => {
+  const handleProfileInfoUpdate = async (e) => {
     e.preventDefault();
-    setIsSaving(true);
-    await axios
-      .put("/api/profile", { name: userName })
-      .then(() => setIsSaving(false))
-      .catch((error) => console.log("err", error))
-      .finally(() => setSaved(true));
+    const savingPromise = new Promise(async (resolve, reject) => {
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: userName,
+          image,
+          phone,
+          streetAddress,
+          postalCode,
+          city,
+          country,
+        }),
+      });
+      if (response.ok) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+
+    await toast.promise(savingPromise, {
+      loading: "Saving...",
+      success: "Profile Saved",
+      error: "Error",
+    });
   };
 
-  // const handleFileChange = async (e) => {
-  //   const file = e.target.files;
-  //   console.log("1", file);
-  //   if (file?.length > 0) {
-  //     const data = new FormData();
-  //     data.set("file", file[0]);
-  //     await axios.post("api/upload", data).then((res) => {
-  //       // setImage(res.data),
-  //       console.log("res", res);
-  //     });
-  //     // .catch((err) => console.log("err", err));
-  //     console.log("ok");
-  //   }
-  // };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // const file = e.target.files;
-    if (!file) {
-      alert("Please select a file to upload.");
-      return;
-    }
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_BASE_URL + "/api/upload",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+  const handleFileChange = async (e) => {
+    const files = e.target.files;
+    if (files?.length === 1) {
+      const data = new FormData();
+      data.set("file", files[0]);
+      await toast.promise(
+        fetch("/api/upload", {
+          method: "POST",
+          body: data,
+        }).then(async (response) => {
+          const link = await response.json();
+          await new Promise((resolve) => setTimeout(resolve, 800)); // too quick, image is not ready yet, so wait a bit
+          setImage(link);
+        }),
+        {
+          loading: "Uploading...",
+          success: "Upload complete!",
+          error: "Upload error!",
         },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
-      }
-    );
-    if (response.ok) {
-      const { url, fields } = await response.json();
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append("file", file);
-      console.log("form", `${url}${fields.key}`);
-      const link= url+fields.key
-      setImage(link)
-      console.log("link", link);
-
-      const uploadResponse = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (uploadResponse.ok) {
-        alert("Upload successful!");
-        console.log("up", uploadResponse);
-      } else {
-        console.error("S3 Upload Error:", uploadResponse);
-        alert("Upload failed.");
-      }
-    } else {
-      alert("Failed to get pre-signed URL.");
+      );
     }
   };
 
@@ -107,54 +110,32 @@ export default function Profile() {
     <section className="mt-8">
       <h1 className="text-center text-primary text-4xl mb-4">Profile</h1>
       <div className="max-w-md mx-auto">
-        {saved && (
-          <h2 className="text-center mb-2 bg-green-100 p-4 rounded-lg border border-green-300">
-            Profile updated
-          </h2>
-        )}
-        {isSaving && (
-          <h2 className="text-center mb-2 bg-blue-100 p-4 rounded-lg border border-blue-300">
-            Profile updating
-          </h2>
-        )}
         <div className="flex gap-4 items-center">
           <div>
-            <div className="p-2 rounded-lg relative">
-              <form onSubmit={handleSubmit}>
-                {image && (
-                  <Image
-                    src={image}
-                    // src={`http://localhost:3000/_next/image?url=https%3A%2F%2Ffood-ordering-111.s3.amazonaws.com%2F6y8ls1uplhf.jpg&w=640&q=75`}
-                    // src={`${image}`}
-                    className="rounded-lg w-full h-full mb-1"
-                    width={250}
-                    height={250}
-                    alt=""
-                  />
-                )}
-                <label>
-                  <input
-                    type="file"
-                    // className="hidden"
-                    onChange={(e) => {
-                      const files = e.target.files;
-                      if (files) {
-                        setFile(files[0]);
-                      }
-                    }}
-                    accept="image/png, image/jpeg, image/jpg"
-                  />
-                  <button
-                    type="submit"
-                    className="cursor-pointer block border border-gray-300 rounded-lg p-2 text-center"
-                  >
-                    Edit
-                  </button>
-                </label>
-              </form>
+            <div className="p-2 rounded-lg relative max-w-[120px]">
+              {image && (
+                <Image
+                  src={image}
+                  className="rounded-lg w-full h-full mb-1 max-w-[120px]"
+                  width={250}
+                  height={250}
+                  alt="avatar"
+                  priority
+                />
+              )}
+              <label>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <span className="block border border-gray-300 rounded-lg p-2 text-center">
+                  Edit
+                </span>
+              </label>
             </div>
           </div>
-          <form onSubmit={handleProfileUpdate} className="grow">
+          <form onSubmit={handleProfileInfoUpdate} className="grow">
             <input
               type="text"
               placeholder="First name and last name"
@@ -165,6 +146,38 @@ export default function Profile() {
               type="email"
               disabled={true}
               value={session.data.user.email}
+            />
+            <input
+              type="tel"
+              placeholder="Phone number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Street address"
+              value={streetAddress}
+              onChange={(e) => setStreetAddress(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Postal code"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="City"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
             />
             <button type="submit">Save</button>
           </form>
