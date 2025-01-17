@@ -44,6 +44,8 @@ export default function Register() {
 
     if (!isValid) {
       setAlert(alertMessage);
+    } else {
+     setAlert("Account has been created susseccfully. Please login") 
     }
 
     return isValid;

@@ -10,8 +10,7 @@ export default function Header() {
   if (userName && userName.includes(" ")) {
     userName = userName.split(" ")[0] + " " + userName.split(" ")[1];
   }
-  // const { data: session, status } = useSession();
-  // console.log("ss", session);
+   //const { data: session, status } = useSession();
 
   return (
     <header className="flex justify-between">

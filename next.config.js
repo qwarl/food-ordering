@@ -13,6 +13,7 @@ const nextConfig = {
       {
         hostname: "food-ordering-111.s3.amazonaws.com",
         protocol: "https",
+        pathname: "/**",
       },
       {
         hostname: "localhost",
@@ -21,9 +22,9 @@ const nextConfig = {
       {
         hostname: "food-ordering-111.s3.ap-southeast-1.amazonaws.com",
         protocol: "https",
-      },
+        pathname: "/**",
+      }
     ],
-    unoptimized: true,
   },
 };
 

@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import Link from "next/link";
+import UserTabs from "@/components/UserTabs/UserTabs";
 
 export default function Profile() {
   const session = useSession();
@@ -15,9 +17,9 @@ export default function Profile() {
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const { status } = session;
-  console.log("log profile", session);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -34,11 +36,13 @@ export default function Profile() {
           return response.json();
         })
         .then((data) => {
-          setPhone(data.phone)
-          setCity(data.city)
-          setCountry(data.country)
-          setPostalCode(data.postalCode)
-          setStreetAddress(data.streetAddress)
+          console.log("data", data);
+          setPhone(data.phone);
+          setCity(data.city);
+          setCountry(data.country);
+          setPostalCode(data.postalCode);
+          setStreetAddress(data.streetAddress);
+          setIsAdmin(data.admin);
         })
         .catch((error) => {
           console.log("GET profile error", error);
@@ -109,7 +113,8 @@ export default function Profile() {
   return (
     <section className="mt-8">
       <h1 className="text-center text-primary text-4xl mb-4">Profile</h1>
-      <div className="max-w-md mx-auto">
+      <UserTabs isAdmin={isAdmin} />
+      <div className="max-w-md mx-auto mt-4">
         <div className="flex gap-4 items-center">
           <div>
             <div className="p-2 rounded-lg relative max-w-[120px]">

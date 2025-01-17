@@ -10,6 +10,7 @@ export default function Login() {
 
   const handleFormLogin = async (e) => {
     e.preventDefault();
+    checkValid();
     await signIn("credentials", {
       email: dto.email,
       password: dto.password,
